@@ -1,0 +1,148 @@
+<form>
+  <div fxLayout.gt-md="row" fxLayout.lt-lg="column" style="padding: 10px;" fxLayoutGap="20px">
+    <mat-card fxFlex fxLayout="column" fxLayoutGap="10px">
+      <mat-card-title color="primary">Document A</mat-card-title>
+      <mat-tab-group>
+        <mat-tab label="Paste">
+          <div style="padding: 10px">
+            <mat-form-field appearance="fill" fxFlex="">
+              <mat-label>OpenAPI Document</mat-label>
+              <textarea matInput [(ngModel)]="input1raw" name="input1raw" style="height: 100px"
+                        placeholder="Paste an entire OpenAPI JSON document here."
+                        (keyup)="readRaw1()"></textarea>
+            </mat-form-field>
+          </div>
+        </mat-tab>
+        <mat-tab label="URL">
+          <div fxLayoutGap="10px" style="padding: 10px">
+            <mat-form-field appearance="fill" fxFlex>
+              <mat-label>OpenAPI URL</mat-label>
+              <input matInput [(ngModel)]="input1url" placeholder="Paste an OpenAPI JSON URL here"
+                     name="input1url">
+            </mat-form-field>
+            <div fxLayoutAlign="center start" style="padding-top: 10px">
+              <button mat-mini-fab color="primary" (click)="readUrl1()"
+                      [disabled]="!(input1url && input1url.length > 0)">
+                <mat-icon>cloud_download</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+      <div *ngIf="input1Endpoints.length > 0" class="mat-subheading-1" fxLayoutAlign="center">
+        {{input1Endpoints.length}} endpoints found.
+      </div>
+      <div *ngIf="input1Endpoints.length == 0" class="mat-subheading-1" fxLayoutAlign="center">
+        Please provide a valid OpenAPI document.
+      </div>
+    </mat-card>
+    <mat-card fxFlex fxLayout="column" fxLayoutGap="10px">
+      <mat-card-title color="primary">Document B</mat-card-title>
+      <mat-tab-group>
+        <mat-tab label="Paste">
+          <div style="padding: 10px">
+            <mat-form-field appearance="fill" fxFlex>
+              <mat-label>OpenAPI Document</mat-label>
+              <textarea matInput [(ngModel)]="input2raw" name="input2raw" style="height: 100px"
+                        placeholder="Paste an entire OpenAPI JSON document here."
+                        (keyup)="readRaw2()"></textarea>
+            </mat-form-field>
+          </div>
+        </mat-tab>
+        <mat-tab label="URL">
+          <div style="padding: 10px" fxLayoutGap="10px">
+            <mat-form-field appearance="fill" fxFlex>
+              <mat-label>OpenAPI URL</mat-label>
+              <input matInput [(ngModel)]="input2url" placeholder="Paste an OpenAPI JSON URL here"
+                     name="input2url">
+            </mat-form-field>
+            <div fxLayoutAlign="center start" style="padding-top: 10px">
+              <button mat-mini-fab color="primary" (click)="readUrl2()" [disabled]="!(input2url && input2url.length > 0)">
+                <mat-icon>cloud_download</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+
+      <div *ngIf="input2Endpoints.length > 0" class="mat-subheading-1" fxLayoutAlign="center">
+        {{input2Endpoints.length}} endpoints found.
+      </div>
+      <div *ngIf="input2Endpoints.length == 0" class="mat-subheading-1" fxLayoutAlign="center">
+        Please provide a valid OpenAPI document.
+      </div>
+    </mat-card>
+  </div>
+  <div fxLayoutAlign="center center">
+    <button mat-raised-button color="primary" (click)="compare()"
+            [disabled]="input1Endpoints.length == 0 || input2Endpoints.length == 0">
+      Compare!
+    </button>
+  </div>
+</form>
+<br>
+<div *ngIf="resultsReady" style="padding: 10px" fxLayout="column" fxLayoutGap="10px">
+  <div *ngIf="endpoints1.length == 0 && endpoints2.length == 0" class="mat-headline" fxLayoutAlign="center">
+    Endpoints identical
+  </div>
+  <mat-expansion-panel *ngIf="endpoints1.length > 0">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Endpoints only in document A</mat-panel-title>
+      <mat-panel-description>{{endpoints1.length}} endpoints</mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxFlex>
+      <table mat-table [dataSource]="endpoints1" fxFlex="">
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Method</th>
+          <td mat-cell *matCellDef="let element"> {{element.method}} </td>
+        </ng-container>
+        <ng-container matColumnDef="path">
+          <th mat-header-cell *matHeaderCellDef>Path</th>
+          <td mat-cell *matCellDef="let element"> {{element.path}} </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </mat-expansion-panel>
+  <mat-expansion-panel *ngIf="endpoints2.length > 0">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Endpoints only in document B</mat-panel-title>
+      <mat-panel-description>{{endpoints2.length}} endpoints</mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxFlex>
+      <table mat-table [dataSource]="endpoints2" fxFlex="">
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Method</th>
+          <td mat-cell *matCellDef="let element"> {{element.method}} </td>
+        </ng-container>
+        <ng-container matColumnDef="path">
+          <th mat-header-cell *matHeaderCellDef>Path</th>
+          <td mat-cell *matCellDef="let element"> {{element.path}} </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </mat-expansion-panel>
+  <mat-expansion-panel *ngIf="endpointsBoth.length > 0">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Endpoints in both documents</mat-panel-title>
+      <mat-panel-description>{{endpointsBoth.length}} endpoints</mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxFlex>
+      <table mat-table [dataSource]="endpointsBoth" fxFlex="">
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Method</th>
+          <td mat-cell *matCellDef="let element"> {{element.method}} </td>
+        </ng-container>
+        <ng-container matColumnDef="path">
+          <th mat-header-cell *matHeaderCellDef>Path</th>
+          <td mat-cell *matCellDef="let element"> {{element.path}} </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </mat-expansion-panel>
+</div>
